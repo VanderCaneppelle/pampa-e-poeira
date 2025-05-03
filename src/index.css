@@ -1,0 +1,18 @@
+@font-face {
+    font-family: 'Esqadero';
+    src: url('./assets/fonts/Esqadero FF CY 4F-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+
+    html,
+    body {
+        font-family: 'Esqadero', sans-serif;
+    }
+}
