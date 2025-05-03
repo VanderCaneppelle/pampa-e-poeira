@@ -6,6 +6,8 @@ import Loja from './pages/Loja';
 import Sobre from './pages/Sobre';
 import Contato from './pages/Contato';
 import ProductPage from './pages/ProductPage';
+import AdminNovoProduto from './pages/AdminNovoProduto';
+import AdminLogin from './pages/AdminLogin';
 
 export default function App() {
   return (
@@ -19,6 +21,8 @@ export default function App() {
           <Route path="/sobre" element={<Sobre />} />
           <Route path="/contato" element={<Contato />} />
           <Route path="/produto/:id" element={<ProductPage />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/novo-produto" element={<AdminNovoProduto />} />
         </Routes>
       </div>
     </Router>
