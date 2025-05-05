@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import Banner from '../components/Banner';
+import { Link } from 'react-router-dom';
 
 export default function Loja() {
     const [produtos, setProdutos] = useState<any[]>([]);
@@ -34,6 +35,7 @@ export default function Loja() {
                             <div className="p-4 flex-1 flex flex-col justify-between w-full">
                                 <h3 className="text-lg font-bold text-pampa-leather mb-2 text-center">{p.nome}</h3>
                                 <p className="text-pampa-moss text-center font-semibold mb-4">R$ {p.preco.toFixed(2)}</p>
+                                <Link to={`/produto/${p.id}`} className="w-full bg-pampa-leather text-pampa-white py-2 rounded hover:bg-pampa-moss transition text-center block font-bold mt-2">Ver Produto</Link>
                             </div>
                         </div>
                     ))}

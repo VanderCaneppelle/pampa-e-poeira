@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import Banner from '../components/Banner';
+import { Link } from 'react-router-dom';
 
 export default function FeaturedProducts() {
     const [produtos, setProdutos] = useState<any[]>([]);
@@ -37,6 +38,7 @@ export default function FeaturedProducts() {
                         <div className="mt-2 font-semibold text-pampa-leather">
                             R$ {produto.preco}
                         </div>
+                        <Link to={`/produto/${produto.id}`} className="w-full bg-pampa-leather text-pampa-white py-2 rounded hover:bg-pampa-moss transition text-center block font-bold mt-2">Ver Produto</Link>
                     </div>
                 ))}
             </div>

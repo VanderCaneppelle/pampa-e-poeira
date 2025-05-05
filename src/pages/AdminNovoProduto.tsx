@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { useNavigate } from 'react-router-dom';
 
 const categorias = [
     'Calçados',
@@ -7,6 +8,17 @@ const categorias = [
     'Lenços',
     'Camisas',
     'Casacos',
+];
+
+const tamanhosDisponiveis = ['PP', 'P', 'M', 'G', 'GG', 'XG', 'Único'];
+const coresDisponiveis = [
+    { nome: 'Azul Marinho', cor: '#1a237e' },
+    { nome: 'Verde Musgo', cor: '#556b2f' },
+    { nome: 'Preto', cor: '#222' },
+    { nome: 'Bege', cor: '#e4d8b4' },
+    { nome: 'Marrom', cor: '#795548' },
+    { nome: 'Vermelho', cor: '#b71c1c' },
+    { nome: 'Branco', cor: '#fff' },
 ];
 
 function gerarIdProduto(numero: number) {
@@ -29,6 +41,17 @@ export default function AdminNovoProduto() {
     const [principal, setPrincipal] = useState<number>(0);
     const [loading, setLoading] = useState(false);
     const [msg, setMsg] = useState<string | null>(null);
+    const [tamanhos, setTamanhos] = useState<string[]>([]);
+    const [cores, setCores] = useState<string[]>([]);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (!session) {
+                navigate('/admin/login');
+            }
+        });
+    }, [navigate]);
 
     function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
         const { name, value, type, checked, files } = e.target as any;
@@ -36,7 +59,7 @@ export default function AdminNovoProduto() {
             setForm(f => ({ ...f, [name]: checked }));
         } else if (type === 'file') {
             if (name === 'imagens' && files) {
-                const filesArr = Array.from(files).slice(0, 5);
+                const filesArr: File[] = Array.from(files).slice(0, 5) as File[];
                 setImagens(filesArr);
                 setPreview(filesArr.map(file => URL.createObjectURL(file)));
                 setPrincipal(0);
@@ -44,6 +67,14 @@ export default function AdminNovoProduto() {
         } else {
             setForm(f => ({ ...f, [name]: value }));
         }
+    }
+
+    function handleTamanhoChange(t: string) {
+        setTamanhos(prev => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t]);
+    }
+
+    function handleCorChange(c: string) {
+        setCores(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]);
     }
 
     async function handleSubmit(e: React.FormEvent) {
@@ -65,7 +96,7 @@ export default function AdminNovoProduto() {
             const url = supabase.storage.from('produtos').getPublicUrl(`${idProduto}/${file.name}`).data.publicUrl;
             urls.push(url);
         }
-        // Salva no banco: array de imagens e url da principal
+        // Salva no banco: array de imagens, url da principal, tamanhos e cores
         const { data, error } = await supabase.from('produtos').insert([
             {
                 id: idProduto,
@@ -78,6 +109,8 @@ export default function AdminNovoProduto() {
                 nova_colecao: form.colecaoNova,
                 imagens: urls,
                 imagem_principal: urls[principal] || null,
+                tamanhos,
+                cores,
             },
         ]);
         setLoading(false);
@@ -91,6 +124,8 @@ export default function AdminNovoProduto() {
             setImagens([]);
             setPreview([]);
             setPrincipal(0);
+            setTamanhos([]);
+            setCores([]);
             setIdProduto(gerarIdProduto(Date.now() % 1000));
         }
     }
@@ -137,6 +172,29 @@ export default function AdminNovoProduto() {
                             <input type="checkbox" name="colecaoNova" checked={form.colecaoNova} onChange={handleChange} />
                             É coleção nova
                         </label>
+                    </div>
+                </div>
+                <div>
+                    <label className="block mb-1 font-semibold">Tamanhos disponíveis</label>
+                    <div className="flex flex-wrap gap-2">
+                        {tamanhosDisponiveis.map(t => (
+                            <label key={t} className={`px-3 py-1 rounded border cursor-pointer ${tamanhos.includes(t) ? 'bg-pampa-leather text-white border-pampa-leather' : 'bg-white border-gray-300'}`}>
+                                <input type="checkbox" className="hidden" checked={tamanhos.includes(t)} onChange={() => handleTamanhoChange(t)} />
+                                {t}
+                            </label>
+                        ))}
+                    </div>
+                </div>
+                <div>
+                    <label className="block mb-1 font-semibold">Cores disponíveis</label>
+                    <div className="flex flex-wrap gap-2">
+                        {coresDisponiveis.map(c => (
+                            <label key={c.nome} className={`flex items-center gap-2 px-3 py-1 rounded border cursor-pointer ${cores.includes(c.nome) ? 'ring-2 ring-pampa-leather border-pampa-leather' : 'bg-white border-gray-300'}`}>
+                                <input type="checkbox" className="hidden" checked={cores.includes(c.nome)} onChange={() => handleCorChange(c.nome)} />
+                                <span className="w-5 h-5 rounded-full border" style={{ background: c.cor, borderColor: '#888' }}></span>
+                                {c.nome}
+                            </label>
+                        ))}
                     </div>
                 </div>
                 <div>
