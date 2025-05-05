@@ -85,7 +85,7 @@ export default function AdminNovoProduto() {
         // Upload das imagens para o Supabase Storage
         for (let i = 0; i < imagens.length; i++) {
             const file = imagens[i];
-            const { data, error } = await supabase.storage
+            const { data: _, error } = await supabase.storage
                 .from('produtos')
                 .upload(`${idProduto}/${file.name}`, file, { upsert: true });
             if (error) {
@@ -97,7 +97,7 @@ export default function AdminNovoProduto() {
             urls.push(url);
         }
         // Salva no banco: array de imagens, url da principal, tamanhos e cores
-        const { data, error } = await supabase.from('produtos').insert([
+        const { data: _, error } = await supabase.from('produtos').insert([
             {
                 id: idProduto,
                 nome: form.nome,
