@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useNavigate } from 'react-router-dom';
@@ -85,7 +86,7 @@ export default function AdminNovoProduto() {
         // Upload das imagens para o Supabase Storage
         for (let i = 0; i < imagens.length; i++) {
             const file = imagens[i];
-            const { data: _, error } = await supabase.storage
+            const { data, error } = await supabase.storage
                 .from('produtos')
                 .upload(`${idProduto}/${file.name}`, file, { upsert: true });
             if (error) {
@@ -97,7 +98,7 @@ export default function AdminNovoProduto() {
             urls.push(url);
         }
         // Salva no banco: array de imagens, url da principal, tamanhos e cores
-        const { data: _, error } = await supabase.from('produtos').insert([
+        const { data, error } = await supabase.from('produtos').insert([
             {
                 id: idProduto,
                 nome: form.nome,
@@ -130,88 +131,107 @@ export default function AdminNovoProduto() {
         }
     }
 
+    async function handleLogout() {
+        await supabase.auth.signOut();
+        navigate('/');
+    }
+
     return (
-        <div className="max-w-xl mx-auto py-12 px-4">
-            <h1 className="text-2xl font-bold mb-6 text-center">Cadastrar Novo Produto</h1>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                <div>
-                    <label className="block mb-1 font-semibold">ID do Produto</label>
-                    <input type="text" value={idProduto} disabled className="w-full border rounded px-3 py-2 bg-gray-100" />
-                </div>
-                <div>
-                    <label className="block mb-1 font-semibold">Nome *</label>
-                    <input required name="nome" value={form.nome} onChange={handleChange} className="w-full border rounded px-3 py-2" />
-                </div>
-                <div>
-                    <label className="block mb-1 font-semibold">Descrição</label>
-                    <textarea name="descricao" value={form.descricao} onChange={handleChange} className="w-full border rounded px-3 py-2" />
-                </div>
-                <div className="flex gap-4">
-                    <div className="flex-1">
-                        <label className="block mb-1 font-semibold">Preço *</label>
-                        <input required name="preco" type="number" min="0" step="0.01" value={form.preco} onChange={handleChange} className="w-full border rounded px-3 py-2" />
-                    </div>
-                    <div className="flex-1">
-                        <label className="block mb-1 font-semibold">Preço Promocional</label>
-                        <input name="precoPromocional" type="number" min="0" step="0.01" value={form.precoPromocional} onChange={handleChange} className="w-full border rounded px-3 py-2" />
-                    </div>
-                </div>
-                <div className="flex gap-4">
-                    <div className="flex-1">
-                        <label className="block mb-1 font-semibold">Categoria</label>
-                        <select name="categoria" value={form.categoria} onChange={handleChange} className="w-full border rounded px-3 py-2">
-                            {categorias.map(cat => <option key={cat}>{cat}</option>)}
-                        </select>
-                    </div>
-                    <div className="flex flex-col justify-end gap-2">
-                        <label className="inline-flex items-center gap-2">
-                            <input type="checkbox" name="lancamento" checked={form.lancamento} onChange={handleChange} />
-                            É lançamento
-                        </label>
-                        <label className="inline-flex items-center gap-2">
-                            <input type="checkbox" name="colecaoNova" checked={form.colecaoNova} onChange={handleChange} />
-                            É coleção nova
-                        </label>
-                    </div>
-                </div>
-                <div>
-                    <label className="block mb-1 font-semibold">Tamanhos disponíveis</label>
-                    <div className="flex flex-wrap gap-2">
-                        {tamanhosDisponiveis.map(t => (
-                            <label key={t} className={`px-3 py-1 rounded border cursor-pointer ${tamanhos.includes(t) ? 'bg-pampa-leather text-white border-pampa-leather' : 'bg-white border-gray-300'}`}>
-                                <input type="checkbox" className="hidden" checked={tamanhos.includes(t)} onChange={() => handleTamanhoChange(t)} />
-                                {t}
-                            </label>
-                        ))}
-                    </div>
-                </div>
-                <div>
-                    <label className="block mb-1 font-semibold">Cores disponíveis</label>
-                    <div className="flex flex-wrap gap-2">
-                        {coresDisponiveis.map(c => (
-                            <label key={c.nome} className={`flex items-center gap-2 px-3 py-1 rounded border cursor-pointer ${cores.includes(c.nome) ? 'ring-2 ring-pampa-leather border-pampa-leather' : 'bg-white border-gray-300'}`}>
-                                <input type="checkbox" className="hidden" checked={cores.includes(c.nome)} onChange={() => handleCorChange(c.nome)} />
-                                <span className="w-5 h-5 rounded-full border" style={{ background: c.cor, borderColor: '#888' }}></span>
-                                {c.nome}
-                            </label>
-                        ))}
-                    </div>
-                </div>
-                <div>
-                    <label className="block mb-1 font-semibold">Imagens (até 5)</label>
-                    <input type="file" accept="image/*" name="imagens" multiple onChange={handleChange} />
-                    <div className="flex gap-2 mt-2">
-                        {preview.map((src, idx) => (
-                            <div key={idx} className="relative">
-                                <img src={src} alt={`Preview ${idx + 1}`} className={`h-24 rounded shadow border-2 ${principal === idx ? 'border-green-600' : 'border-gray-300'}`} />
-                                <button type="button" onClick={() => setPrincipal(idx)} className="absolute top-1 right-1 bg-white rounded px-1 text-xs border">{principal === idx ? 'Principal' : 'Tornar principal'}</button>
+        <div>
+            {/* Barra de topo modo admin */}
+            <div className="w-full bg-pampa-leather text-white py-2 px-4 flex justify-between items-center fixed top-0 left-0 z-50">
+                <span>Você está em modo administrador</span>
+                <button
+                    onClick={handleLogout}
+                    className="bg-white text-pampa-leather px-3 py-1 rounded font-bold hover:bg-gray-100"
+                >
+                    Sair do modo admin
+                </button>
+            </div>
+            <div className="pt-12">
+                <div className="max-w-xl mx-auto py-12 px-4">
+                    <h1 className="text-2xl font-bold mb-6 text-center">Cadastrar Novo Produto</h1>
+                    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                        <div>
+                            <label className="block mb-1 font-semibold">ID do Produto</label>
+                            <input type="text" value={idProduto} disabled className="w-full border rounded px-3 py-2 bg-gray-100" />
+                        </div>
+                        <div>
+                            <label className="block mb-1 font-semibold">Nome *</label>
+                            <input required name="nome" value={form.nome} onChange={handleChange} className="w-full border rounded px-3 py-2" />
+                        </div>
+                        <div>
+                            <label className="block mb-1 font-semibold">Descrição</label>
+                            <textarea name="descricao" value={form.descricao} onChange={handleChange} className="w-full border rounded px-3 py-2" />
+                        </div>
+                        <div className="flex gap-4">
+                            <div className="flex-1">
+                                <label className="block mb-1 font-semibold">Preço *</label>
+                                <input required name="preco" type="number" min="0" step="0.01" value={form.preco} onChange={handleChange} className="w-full border rounded px-3 py-2" />
                             </div>
-                        ))}
-                    </div>
+                            <div className="flex-1">
+                                <label className="block mb-1 font-semibold">Preço Promocional</label>
+                                <input name="precoPromocional" type="number" min="0" step="0.01" value={form.precoPromocional} onChange={handleChange} className="w-full border rounded px-3 py-2" />
+                            </div>
+                        </div>
+                        <div className="flex gap-4">
+                            <div className="flex-1">
+                                <label className="block mb-1 font-semibold">Categoria</label>
+                                <select name="categoria" value={form.categoria} onChange={handleChange} className="w-full border rounded px-3 py-2">
+                                    {categorias.map(cat => <option key={cat}>{cat}</option>)}
+                                </select>
+                            </div>
+                            <div className="flex flex-col justify-end gap-2">
+                                <label className="inline-flex items-center gap-2">
+                                    <input type="checkbox" name="lancamento" checked={form.lancamento} onChange={handleChange} />
+                                    É lançamento
+                                </label>
+                                <label className="inline-flex items-center gap-2">
+                                    <input type="checkbox" name="colecaoNova" checked={form.colecaoNova} onChange={handleChange} />
+                                    É coleção nova
+                                </label>
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block mb-1 font-semibold">Tamanhos disponíveis</label>
+                            <div className="flex flex-wrap gap-2">
+                                {tamanhosDisponiveis.map(t => (
+                                    <label key={t} className={`px-3 py-1 rounded border cursor-pointer ${tamanhos.includes(t) ? 'bg-pampa-leather text-white border-pampa-leather' : 'bg-white border-gray-300'}`}>
+                                        <input type="checkbox" className="hidden" checked={tamanhos.includes(t)} onChange={() => handleTamanhoChange(t)} />
+                                        {t}
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block mb-1 font-semibold">Cores disponíveis</label>
+                            <div className="flex flex-wrap gap-2">
+                                {coresDisponiveis.map(c => (
+                                    <label key={c.nome} className={`flex items-center gap-2 px-3 py-1 rounded border cursor-pointer ${cores.includes(c.nome) ? 'ring-2 ring-pampa-leather border-pampa-leather' : 'bg-white border-gray-300'}`}>
+                                        <input type="checkbox" className="hidden" checked={cores.includes(c.nome)} onChange={() => handleCorChange(c.nome)} />
+                                        <span className="w-5 h-5 rounded-full border" style={{ background: c.cor, borderColor: '#888' }}></span>
+                                        {c.nome}
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block mb-1 font-semibold">Imagens (até 5)</label>
+                            <input type="file" accept="image/*" name="imagens" multiple onChange={handleChange} />
+                            <div className="flex gap-2 mt-2">
+                                {preview.map((src, idx) => (
+                                    <div key={idx} className="relative">
+                                        <img src={src} alt={`Preview ${idx + 1}`} className={`h-24 rounded shadow border-2 ${principal === idx ? 'border-green-600' : 'border-gray-300'}`} />
+                                        <button type="button" onClick={() => setPrincipal(idx)} className="absolute top-1 right-1 bg-white rounded px-1 text-xs border">{principal === idx ? 'Principal' : 'Tornar principal'}</button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        <button type="submit" className="bg-pampa-leather text-pampa-white py-3 rounded font-bold text-lg hover:bg-pampa-moss transition mt-4" disabled={loading}>{loading ? 'Salvando...' : 'Cadastrar Produto'}</button>
+                        {msg && <div className={`text-center mt-2 ${msg.includes('sucesso') ? 'text-green-600' : 'text-red-600'}`}>{msg}</div>}
+                    </form>
                 </div>
-                <button type="submit" className="bg-pampa-leather text-pampa-white py-3 rounded font-bold text-lg hover:bg-pampa-moss transition mt-4" disabled={loading}>{loading ? 'Salvando...' : 'Cadastrar Produto'}</button>
-                {msg && <div className={`text-center mt-2 ${msg.includes('sucesso') ? 'text-green-600' : 'text-red-600'}`}>{msg}</div>}
-            </form>
+            </div>
         </div>
     );
 } 
