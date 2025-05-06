@@ -40,7 +40,7 @@ export default function AdminNovoProduto() {
     const [msg, setMsg] = useState<string | null>(null);
     const [tamanhos, setTamanhos] = useState<string[]>([]);
     const [cores, setCores] = useState<string[]>([]);
-    const [categoria, setCategoria] = useState(categorias[0]);
+    // const [categoria, setCategoria] = useState(categorias[0]);
     const [subcategoriaCalcado, setSubcategoriaCalcado] = useState<'Adulto' | 'Infantil' | null>(null);
     const navigate = useNavigate();
 
