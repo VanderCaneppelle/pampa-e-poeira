@@ -111,7 +111,7 @@ export default function AdminEditarProduto() {
             imagem_principal: imagens[principal] || null,
         };
 
-        const { data, error } = await supabase
+        const { data: _, error } = await supabase
             .from('produtos')
             .update(payload)
             .eq('id', id)
