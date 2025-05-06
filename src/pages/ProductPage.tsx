@@ -10,7 +10,7 @@ const coresPossiveis = [
     { nome: 'Preto', cor: '#222' },
     { nome: 'Bege', cor: '#e4d8b4' },
     { nome: 'Marrom', cor: '#795548' },
-    { nome: 'Vermelho', cor: '#b71c1c' },
+    { nome: 'Bordô', cor: '#400409' },
     { nome: 'Branco', cor: '#fff' },
 ];
 
