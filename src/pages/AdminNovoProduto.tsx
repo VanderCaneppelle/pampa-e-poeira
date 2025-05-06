@@ -132,10 +132,10 @@ export default function AdminNovoProduto() {
         }
     }
 
-    async function handleLogout() {
-        await supabase.auth.signOut();
-        navigate('/');
-    }
+    // async function handleLogout() {
+    //     await supabase.auth.signOut();
+    //     navigate('/');
+    // }
 
     return (
         <div>
