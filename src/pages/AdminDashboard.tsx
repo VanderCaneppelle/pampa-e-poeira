@@ -1,4 +1,4 @@
-
+import React from 'react';
 import { Link } from 'react-router-dom';
 import AdminBar from '../components/AdminBar';
 
@@ -29,6 +29,26 @@ export default function AdminDashboard() {
                                         <dl>
                                             <dt className="text-sm font-medium text-gray-500 truncate">Cadastrar Produto</dt>
                                             <dd className="text-lg font-medium text-gray-900">Adicionar novo produto</dd>
+                                        </dl>
+                                    </div>
+                                </div>
+                            </div>
+                        </Link>
+                        <Link
+                            to="/admin/gerenciar-produtos"
+                            className="bg-white overflow-hidden shadow rounded-lg hover:shadow-lg transition-shadow duration-300"
+                        >
+                            <div className="p-6">
+                                <div className="flex items-center">
+                                    <div className="flex-shrink-0 bg-pampa-leather rounded-md p-3">
+                                        <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7h18M3 12h18M3 17h18" />
+                                        </svg>
+                                    </div>
+                                    <div className="ml-5 w-0 flex-1">
+                                        <dl>
+                                            <dt className="text-sm font-medium text-gray-500 truncate">Gerenciar Produtos</dt>
+                                            <dd className="text-lg font-medium text-gray-900">Editar ou excluir produtos</dd>
                                         </dl>
                                     </div>
                                 </div>
