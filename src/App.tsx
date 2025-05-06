@@ -1,4 +1,4 @@
-
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
@@ -10,6 +10,8 @@ import ProductPage from './pages/ProductPage';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminLogin from './pages/AdminLogin';
 import AdminNovoProduto from './pages/AdminNovoProduto';
+import AdminGerenciarProdutos from './pages/AdminGerenciarProdutos';
+import AdminEditarProduto from './pages/AdminEditarProduto';
 import ProtectedRoute from './components/ProtectedRoute';
 
 export default function App() {
@@ -30,6 +32,22 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <AdminNovoProduto />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/gerenciar-produtos"
+            element={
+              <ProtectedRoute>
+                <AdminGerenciarProdutos />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/editar-produto/:id"
+            element={
+              <ProtectedRoute>
+                <AdminEditarProduto />
               </ProtectedRoute>
             }
           />
