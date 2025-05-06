@@ -125,16 +125,30 @@ export default function ProductPage() {
                                     ? JSON.parse(product.cores).includes(c.nome)
                                     : false;
                             return (
-                                <button
-                                    key={c.nome}
-                                    onClick={() => disponivel && setCorSelecionada(c.nome)}
-                                    disabled={!disponivel}
-                                    className={`w-8 h-8 rounded-full border-2 transition-all
-                                        ${corSelecionada === c.nome && disponivel ? 'ring-2 ring-pampa-leather border-pampa-leather' : 'border-gray-300'}
-                                        ${!disponivel ? 'opacity-40 cursor-not-allowed line-through' : ''}`}
-                                    style={{ background: c.cor }}
-                                    title={c.nome}
-                                />
+                                <div key={c.nome} className="relative w-8 h-8">
+                                    <button
+                                        onClick={() => disponivel && setCorSelecionada(c.nome)}
+                                        disabled={!disponivel}
+                                        className={`w-8 h-8 rounded-full border-2 transition-all
+                                            ${corSelecionada === c.nome && disponivel ? 'ring-2 ring-pampa-leather border-pampa-leather' : 'border-gray-300'}
+                                            ${!disponivel ? 'opacity-40 cursor-not-allowed' : ''}`}
+                                        style={{ background: c.cor }}
+                                        title={c.nome}
+                                    />
+                                    {/* X vermelho para riscar cor indisponível, fora do botão para não herdar opacidade */}
+                                    {!disponivel && (
+                                        <>
+                                            <span
+                                                className="pointer-events-none absolute left-1.5 right-1.5 top-1/2 border-t-4 border-red-800 rotate-45 z-10"
+                                                style={{ borderColor: '#dc2626' }}
+                                            />
+                                            <span
+                                                className="pointer-events-none absolute left-1.5 right-1.5 top-1/2 border-t-4 border-red-800 -rotate-45 z-10"
+                                                style={{ borderColor: '#dc2626' }}
+                                            />
+                                        </>
+                                    )}
+                                </div>
                             );
                         })}
                     </div>
