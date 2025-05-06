@@ -2,6 +2,7 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useNavigate } from 'react-router-dom';
+import AdminBar from '../components/AdminBar';
 
 const categorias = [
     'Calçados',
@@ -138,16 +139,7 @@ export default function AdminNovoProduto() {
 
     return (
         <div>
-            {/* Barra de topo modo admin */}
-            <div className="w-full bg-pampa-leather text-white py-2 px-4 flex justify-between items-center fixed top-0 left-0 z-50">
-                <span>Você está em modo administrador</span>
-                <button
-                    onClick={handleLogout}
-                    className="bg-white text-pampa-leather px-3 py-1 rounded font-bold hover:bg-gray-100"
-                >
-                    Sair do modo admin
-                </button>
-            </div>
+            <AdminBar />
             <div className="pt-12">
                 <div className="max-w-xl mx-auto py-12 px-4">
                     <h1 className="text-2xl font-bold mb-6 text-center">Cadastrar Novo Produto</h1>
