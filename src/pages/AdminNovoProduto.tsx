@@ -4,15 +4,10 @@ import { supabase } from '../lib/supabaseClient';
 import { useNavigate } from 'react-router-dom';
 import AdminBar from '../components/AdminBar';
 
-const categorias = [
-    'Calçados',
-    'Boinas',
-    'Lenços',
-    'Camisas',
-    'Casacos',
-];
-
-const tamanhosDisponiveis = ['PP', 'P', 'M', 'G', 'GG', 'XG', 'Único'];
+const categorias = ['Camisetas', 'Calças', 'Acessórios', 'Calçado', 'Outros'];
+const tamanhosPadrao = ['PP', 'P', 'M', 'G', 'GG', 'XG', 'Único'];
+const tamanhosCalcadoInfantil = Array.from({ length: 34 - 23 + 1 }, (_, i) => (23 + i).toString());
+const tamanhosCalcadoAdulto = Array.from({ length: 43 - 35 + 1 }, (_, i) => (35 + i).toString());
 const coresDisponiveis = [
     { nome: 'Azul Marinho', cor: '#1a237e' },
     { nome: 'Verde Musgo', cor: '#556b2f' },
@@ -45,6 +40,8 @@ export default function AdminNovoProduto() {
     const [msg, setMsg] = useState<string | null>(null);
     const [tamanhos, setTamanhos] = useState<string[]>([]);
     const [cores, setCores] = useState<string[]>([]);
+    const [categoria, setCategoria] = useState(categorias[0]);
+    const [subcategoriaCalcado, setSubcategoriaCalcado] = useState<'Adulto' | 'Infantil' | null>(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -68,6 +65,10 @@ export default function AdminNovoProduto() {
             }
         } else {
             setForm(f => ({ ...f, [name]: value }));
+            if (name === 'categoria') {
+                setSubcategoriaCalcado(null);
+                setTamanhos([]);
+            }
         }
     }
 
@@ -166,28 +167,63 @@ export default function AdminNovoProduto() {
                                 <input name="precoPromocional" type="number" min="0" step="0.01" value={form.precoPromocional} onChange={handleChange} className="w-full border rounded px-3 py-2" />
                             </div>
                         </div>
-                        <div className="flex gap-4">
-                            <div className="flex-1">
-                                <label className="block mb-1 font-semibold">Categoria</label>
-                                <select name="categoria" value={form.categoria} onChange={handleChange} className="w-full border rounded px-3 py-2">
-                                    {categorias.map(cat => <option key={cat}>{cat}</option>)}
-                                </select>
-                            </div>
-                            <div className="flex flex-col justify-end gap-2">
-                                <label className="inline-flex items-center gap-2">
-                                    <input type="checkbox" name="lancamento" checked={form.lancamento} onChange={handleChange} />
-                                    É lançamento
-                                </label>
-                                <label className="inline-flex items-center gap-2">
-                                    <input type="checkbox" name="colecaoNova" checked={form.colecaoNova} onChange={handleChange} />
-                                    É coleção nova
-                                </label>
-                            </div>
-                        </div>
                         <div>
+                            <label className="block mb-1 font-semibold">Categoria</label>
+                            <select name="categoria" value={form.categoria} onChange={handleChange} className="w-full border rounded px-3 py-2">
+                                {categorias.map(cat => <option key={cat}>{cat}</option>)}
+                            </select>
+                        </div>
+                        {/* Se for calçado, mostrar subcategoria */}
+                        {form.categoria === 'Calçado' && (
+                            <div className="mt-4">
+                                <label className="block mb-1 font-semibold">Subcategoria</label>
+                                <div className="flex gap-4">
+                                    <label className="flex items-center gap-2">
+                                        <input
+                                            type="radio"
+                                            name="subcategoria-calcado"
+                                            value="Adulto"
+                                            checked={subcategoriaCalcado === 'Adulto'}
+                                            onChange={() => {
+                                                setSubcategoriaCalcado('Adulto');
+                                                setTamanhos([]);
+                                            }}
+                                        />
+                                        Adulto
+                                    </label>
+                                    <label className="flex items-center gap-2">
+                                        <input
+                                            type="radio"
+                                            name="subcategoria-calcado"
+                                            value="Infantil"
+                                            checked={subcategoriaCalcado === 'Infantil'}
+                                            onChange={() => {
+                                                setSubcategoriaCalcado('Infantil');
+                                                setTamanhos([]);
+                                            }}
+                                        />
+                                        Infantil
+                                    </label>
+                                </div>
+                            </div>
+                        )}
+                        {/* Seleção de tamanhos */}
+                        <div className="mt-4">
                             <label className="block mb-1 font-semibold">Tamanhos disponíveis</label>
                             <div className="flex flex-wrap gap-2">
-                                {tamanhosDisponiveis.map(t => (
+                                {form.categoria === 'Calçado' && subcategoriaCalcado === 'Infantil' && tamanhosCalcadoInfantil.map(t => (
+                                    <label key={t} className={`px-3 py-1 rounded border cursor-pointer ${tamanhos.includes(t) ? 'bg-pampa-leather text-white border-pampa-leather' : 'bg-white border-gray-300'}`}>
+                                        <input type="checkbox" className="hidden" checked={tamanhos.includes(t)} onChange={() => handleTamanhoChange(t)} />
+                                        {t}
+                                    </label>
+                                ))}
+                                {form.categoria === 'Calçado' && subcategoriaCalcado === 'Adulto' && tamanhosCalcadoAdulto.map(t => (
+                                    <label key={t} className={`px-3 py-1 rounded border cursor-pointer ${tamanhos.includes(t) ? 'bg-pampa-leather text-white border-pampa-leather' : 'bg-white border-gray-300'}`}>
+                                        <input type="checkbox" className="hidden" checked={tamanhos.includes(t)} onChange={() => handleTamanhoChange(t)} />
+                                        {t}
+                                    </label>
+                                ))}
+                                {form.categoria !== 'Calçado' && tamanhosPadrao.map(t => (
                                     <label key={t} className={`px-3 py-1 rounded border cursor-pointer ${tamanhos.includes(t) ? 'bg-pampa-leather text-white border-pampa-leather' : 'bg-white border-gray-300'}`}>
                                         <input type="checkbox" className="hidden" checked={tamanhos.includes(t)} onChange={() => handleTamanhoChange(t)} />
                                         {t}

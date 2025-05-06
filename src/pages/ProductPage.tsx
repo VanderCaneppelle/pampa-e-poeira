@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 
 // Exemplo de tamanhos e cores disponíveis (ajuste conforme sua lógica)
-const tamanhosPossiveis = ['PP', 'P', 'M', 'G', 'GG', 'XG', 'Único'];
+const tamanhosPadrao = ['PP', 'P', 'M', 'G', 'GG', 'XG', 'Único'];
 const coresPossiveis = [
     { nome: 'Azul Marinho', cor: '#1a237e' },
     { nome: 'Verde Musgo', cor: '#556b2f' },
@@ -13,6 +13,7 @@ const coresPossiveis = [
     { nome: 'Bordô', cor: '#400409' },
     { nome: 'Branco', cor: '#fff' },
 ];
+console.log('tamanhosPadrao:', tamanhosPadrao);
 
 export default function ProductPage() {
     const { id } = useParams();
@@ -40,10 +41,16 @@ export default function ProductPage() {
     if (!product) {
         return <div className="text-center py-20">Produto não encontrado. <Link to="/colecao" className="text-pampa-leather underline">Voltar para a Coleção</Link></div>;
     }
+    console.log('categoria:', product.categoria);
 
-    // Garantir arrays para evitar erro caso undefined
-    const tamanhosDisponiveis = Array.isArray(product.tamanhos) ? product.tamanhos : [];
-    const coresDisponiveis = Array.isArray(product.cores) ? product.cores : [];
+
+    // Garantir que tamanhosDisponiveis é sempre um array
+    const tamanhosDisponiveis = Array.isArray(product.tamanhos)
+        ? product.tamanhos
+        : typeof product.tamanhos === 'string'
+            ? JSON.parse(product.tamanhos)
+            : [];
+    console.log('tamanhosDisponiveis:', tamanhosDisponiveis);
 
     return (
         <div className="max-w-4xl mx-auto py-12 px-4 flex flex-col md:flex-row gap-10">
@@ -68,6 +75,7 @@ export default function ProductPage() {
             </div>
 
             {/* Detalhes do produto */}
+
             <div className="flex-1 flex flex-col gap-4">
                 <h1 className="text-3xl font-bold mb-2">{product.nome}</h1>
                 <p className="text-lg text-pampa-moss mb-2">R$ {Number(product.preco).toFixed(2)}</p>
@@ -77,21 +85,32 @@ export default function ProductPage() {
                 <div className="mb-4">
                     <span className="font-semibold">Tamanho:</span>
                     <div className="flex gap-2 mt-2">
-                        {tamanhosPossiveis.map((t) => {
-                            const disponivel = tamanhosDisponiveis.includes(t);
-                            return (
-                                <button
-                                    key={t}
-                                    onClick={() => disponivel && setTamanhoSelecionado(t)}
-                                    disabled={!disponivel}
-                                    className={`px-4 py-2 rounded border transition-all
-                                        ${tamanhoSelecionado === t && disponivel ? 'bg-pampa-leather text-white border-pampa-leather' : 'bg-white border-gray-300'}
-                                        ${!disponivel ? 'line-through opacity-50 cursor-not-allowed' : ''}`}
-                                >
-                                    {t}
-                                </button>
-                            );
-                        })}
+                        {tamanhosDisponiveis.length > 0 ? (
+                            (product.categoria === 'Calçado' || product.categoria === 'Calçados') ? (
+                                tamanhosDisponiveis.map((t: string) => (
+                                    <button
+                                        key={t}
+                                        onClick={() => setTamanhoSelecionado(t)}
+                                        className={`px-4 py-2 rounded border ${tamanhoSelecionado === t ? 'bg-pampa-leather text-white border-pampa-leather' : 'bg-white border-gray-300'}`}
+                                    >
+                                        {t}
+                                    </button>
+                                ))
+                            ) : (
+                                tamanhosPadrao.map((t) => (
+                                    <button
+                                        key={t}
+                                        onClick={() => tamanhosDisponiveis.includes(t) && setTamanhoSelecionado(t)}
+                                        disabled={!tamanhosDisponiveis.includes(t)}
+                                        className={`px-4 py-2 rounded border ${tamanhoSelecionado === t ? 'bg-pampa-leather text-white border-pampa-leather' : 'bg-white border-gray-300'} ${!tamanhosDisponiveis.includes(t) ? 'line-through opacity-50 cursor-not-allowed' : ''}`}
+                                    >
+                                        {t}
+                                    </button>
+                                ))
+                            )
+                        ) : (
+                            <span className="text-gray-400">Nenhum tamanho disponível</span>
+                        )}
                     </div>
                 </div>
 
@@ -100,7 +119,11 @@ export default function ProductPage() {
                     <span className="font-semibold">Cor:</span>
                     <div className="flex gap-2 mt-2">
                         {coresPossiveis.map((c) => {
-                            const disponivel = coresDisponiveis.includes(c.nome);
+                            const disponivel = Array.isArray(product.cores)
+                                ? product.cores.includes(c.nome)
+                                : typeof product.cores === 'string'
+                                    ? JSON.parse(product.cores).includes(c.nome)
+                                    : false;
                             return (
                                 <button
                                     key={c.nome}
