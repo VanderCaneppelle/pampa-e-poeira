@@ -1,6 +1,7 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { useCart } from '../contexts/CartContext';
 
 // Exemplo de tamanhos e cores disponíveis (ajuste conforme sua lógica)
 const tamanhosPadrao = ['PP', 'P', 'M', 'G', 'GG', 'XG', 'Único'];
@@ -17,11 +18,15 @@ console.log('tamanhosPadrao:', tamanhosPadrao);
 
 export default function ProductPage() {
     const { id } = useParams();
+    const navigate = useNavigate();
+    const { addToCart } = useCart();
     const [product, setProduct] = useState<any | null>(null);
     const [imgIdx, setImgIdx] = useState(0);
     const [loading, setLoading] = useState(true);
     const [tamanhoSelecionado, setTamanhoSelecionado] = useState<string | null>(null);
     const [corSelecionada, setCorSelecionada] = useState<string | null>(null);
+    const [quantidade, setQuantidade] = useState(1);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         async function fetchProduct() {
@@ -36,6 +41,24 @@ export default function ProductPage() {
         }
         fetchProduct();
     }, [id]);
+
+    async function handleAddToCart() {
+        if (!tamanhoSelecionado) {
+            setError('Por favor, selecione um tamanho');
+            return;
+        }
+        if (!corSelecionada) {
+            setError('Por favor, selecione uma cor');
+            return;
+        }
+
+        try {
+            await addToCart(product, quantidade, tamanhoSelecionado, corSelecionada);
+            navigate('/carrinho');
+        } catch (err) {
+            setError('Erro ao adicionar ao carrinho. Por favor, tente novamente.');
+        }
+    }
 
     if (loading) return <div className="text-center py-20">Carregando produto...</div>;
     if (!product) {
@@ -154,7 +177,38 @@ export default function ProductPage() {
                     </div>
                 </div>
 
-                <button className="bg-pampa-leather text-pampa-white py-3 rounded font-bold text-lg hover:bg-pampa-moss transition">Adicionar ao Carrinho</button>
+                {/* Quantidade */}
+                <div className="mb-4">
+                    <span className="font-semibold">Quantidade:</span>
+                    <div className="flex items-center gap-4 mt-2">
+                        <button
+                            onClick={() => setQuantidade(q => Math.max(1, q - 1))}
+                            className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100"
+                        >
+                            -
+                        </button>
+                        <span className="text-lg">{quantidade}</span>
+                        <button
+                            onClick={() => setQuantidade(q => q + 1)}
+                            className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100"
+                        >
+                            +
+                        </button>
+                    </div>
+                </div>
+
+                {error && (
+                    <div className="text-red-600 text-sm mb-4">
+                        {error}
+                    </div>
+                )}
+
+                <button
+                    onClick={handleAddToCart}
+                    className="bg-pampa-leather text-pampa-white py-3 rounded font-bold text-lg hover:bg-pampa-moss transition"
+                >
+                    Adicionar ao Carrinho
+                </button>
             </div>
         </div>
     );
