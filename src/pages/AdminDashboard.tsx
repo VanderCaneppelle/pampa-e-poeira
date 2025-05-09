@@ -1,7 +1,119 @@
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { supabase } from '../lib/supabaseClient';
 import AdminBar from '../components/AdminBar';
 
+interface Order {
+    id: string;
+    user_id: string;
+    status: string;
+    total_amount: number;
+    created_at: string;
+    shipping_address: {
+        cep: string;
+        rua: string;
+        numero: string;
+        complemento?: string;
+        bairro: string;
+        cidade: string;
+        estado: string;
+    };
+    user?: {
+        email: string;
+    };
+}
+
+interface Stats {
+    totalProducts: number;
+    totalOrders: number;
+    totalUsers: number;
+    recentOrders: Order[];
+}
+
 export default function AdminDashboard() {
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [stats, setStats] = useState<Stats>({
+        totalProducts: 0,
+        totalOrders: 0,
+        totalUsers: 0,
+        recentOrders: []
+    });
+
+    useEffect(() => {
+        fetchStats();
+    }, []);
+
+    async function fetchStats() {
+        try {
+            setLoading(true);
+
+            // Buscar total de produtos
+            const { count: productsCount, error: productsError } = await supabase
+                .from('produtos')
+                .select('*', { count: 'exact', head: true });
+
+            if (productsError) throw productsError;
+
+            // Buscar total de pedidos
+            const { count: ordersCount, error: ordersError } = await supabase
+                .from('orders')
+                .select('*', { count: 'exact', head: true });
+
+            if (ordersError) throw ordersError;
+
+            // Buscar total de usuários
+            const { count: usersCount, error: usersError } = await supabase
+                .from('users')
+                .select('*', { count: 'exact', head: true });
+
+            if (usersError) throw usersError;
+
+            // Buscar pedidos recentes
+            const { data: recentOrders, error: recentOrdersError } = await supabase
+                .from('orders')
+                .select(`
+                    *,
+                    user:user_id (
+                        email
+                    )
+                `)
+                .order('created_at', { ascending: false })
+                .limit(5);
+
+            if (recentOrdersError) throw recentOrdersError;
+
+            setStats({
+                totalProducts: productsCount || 0,
+                totalOrders: ordersCount || 0,
+                totalUsers: usersCount || 0,
+                recentOrders: recentOrders || []
+            });
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Erro ao carregar estatísticas');
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gray-100 py-8">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="animate-pulse">
+                        <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 mb-8">
+                            {[1, 2, 3].map((i) => (
+                                <div key={i} className="h-32 bg-gray-200 rounded"></div>
+                            ))}
+                        </div>
+                        <div className="h-64 bg-gray-200 rounded"></div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div>
             <AdminBar />
