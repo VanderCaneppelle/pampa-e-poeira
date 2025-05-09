@@ -32,8 +32,8 @@ interface Stats {
 
 export default function AdminDashboard() {
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [stats, setStats] = useState<Stats>({
+    const [, setError] = useState<string | null>(null);
+    const [, setStats] = useState<Stats>({
         totalProducts: 0,
         totalOrders: 0,
         totalUsers: 0,
