@@ -23,7 +23,7 @@ const swaggerDefinition = {
     servers: [
         {
             url: VITE_API_URL,
-            description: 'Servidor teste be',
+            description: 'Servidor teste',
         },
     ],
 };
