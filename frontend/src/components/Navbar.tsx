@@ -43,7 +43,7 @@ export default function Navbar() {
                     {/* Logo */}
                     <Link to="/" className="flex items-center gap-2 md:gap-3 text-xl md:text-2xl font-bold text-black whitespace-nowrap" style={{ fontFamily: 'Esqadero, sans-serif' }}>
                         <img src={logo} alt="Logo PAMPA & POEIRA" className="h-8 w-auto md:h-10" />
-                        <span>PAMPA & POEIRA |  </span>
+                        <span>2 PAMPA & POEIRA |  </span>
                     </Link>
 
                     {/* Menu desktop */}
