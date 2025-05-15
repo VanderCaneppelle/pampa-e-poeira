@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
 import { useNavigate } from 'react-router-dom';
 import AdminBar from '../components/AdminBar';
 const API_URL = import.meta.env.VITE_API_URL;
@@ -7,7 +6,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 export default function AdminGerenciarProdutos() {
     const [produtos, setProdutos] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const [msg, setMsg] = useState<string | null>(null);
+    const [msg] = useState<string | null>(null);
     const navigate = useNavigate();
 
     useEffect(() => {

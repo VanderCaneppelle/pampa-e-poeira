@@ -1,6 +1,5 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
 import { useCart } from '../contexts/CartContext';
 
 // Exemplo de tamanhos e cores disponíveis (ajuste conforme sua lógica)

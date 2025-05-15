@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabaseClient';
 import AdminBar from '../components/AdminBar';
 
 const categorias = [
@@ -53,8 +52,8 @@ export default function AdminEditarProduto() {
                 setForm({
                     nome: data.nome || '',
                     descricao: data.descricao || '',
-                    preco: data.preco ? Number(data.preco) : '',
-                    precoPromocional: data.preco_promocional ? Number(data.preco_promocional) : '',
+                    preco: data.preco ? String(data.preco) : '',
+                    precoPromocional: data.preco_promocional ? String(data.preco_promocional) : '',
                     categoria: data.categoria || categorias[0],
                     lancamento: !!data.lancamento,
                     colecaoNova: !!data.nova_colecao,
