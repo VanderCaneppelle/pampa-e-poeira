@@ -37,17 +37,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
 
-        const { data: cartItems, error } = await supabase
-            .from('cart_items')
-            .select('*, product:produtos(*)')
-            .eq('user_id', session.user.id);
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/cart/${session.user.id}`);
+            const data = await response.json();
 
-        if (error) {
-            console.error('Erro ao carregar carrinho:', error);
-            return;
+            if (response.ok) {
+                setItems(data || []);
+            } else {
+                console.error('Erro ao carregar carrinho:', data.error);
+            }
+        } catch (error) {
+            console.error('Erro na requisição:', error);
         }
-
-        setItems(cartItems || []);
     }
 
     async function addToCart(product: any, quantity: number, size: string, color: string) {
@@ -56,76 +57,83 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             // Redirecionar para login ou mostrar modal de login
             return;
         }
-
-        const { data, error } = await supabase
-            .from('cart_items')
-            .insert([
-                {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/cart`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
                     user_id: session.user.id,
                     product_id: product.id,
                     quantity,
                     size,
                     color
-                }
-            ])
-            .select()
-            .single();
-
-        if (error) {
-            console.error('Erro ao adicionar ao carrinho:', error);
-            return;
+                })
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                console.error('Erro ao adicionar ao carrinho:', data.error);
+                return;
+            }
+            setItems(prev => [...prev, { ...data, product }]);
+        } catch (error) {
+            console.error('Erro na requisição ao adicionar ao carrinho:', error);
         }
-
-        setItems(prev => [...prev, { ...data, product }]);
     }
 
     async function removeFromCart(itemId: string) {
-        const { error } = await supabase
-            .from('cart_items')
-            .delete()
-            .eq('id', itemId);
-
-        if (error) {
-            console.error('Erro ao remover do carrinho:', error);
-            return;
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/cart/${itemId}`);
+            if (!response.ok) {
+                const data = await response.json();
+                console.error('Erro ao remover do carrinho:', data.error);
+                return;
+            }
+            setItems(prev => prev.filter(item => item.id !== itemId));
+        } catch (error) {
+            console.error('Erro na requisição ao remover do carrinho:', error);
         }
-
-        setItems(prev => prev.filter(item => item.id !== itemId));
     }
 
     async function updateQuantity(itemId: string, quantity: number) {
-        const { error } = await supabase
-            .from('cart_items')
-            .update({ quantity })
-            .eq('id', itemId);
-
-        if (error) {
-            console.error('Erro ao atualizar quantidade:', error);
-            return;
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/cart/${itemId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ quantity })
+            });
+            if (!response.ok) {
+                const data = await response.json();
+                console.error('Erro ao atualizar quantidade:', data.error);
+                return;
+            }
+            setItems(prev =>
+                prev.map(item =>
+                    item.id === itemId ? { ...item, quantity } : item
+                )
+            );
+        } catch (error) {
+            console.error('Erro na requisição ao atualizar quantidade:', error);
         }
-
-        setItems(prev =>
-            prev.map(item =>
-                item.id === itemId ? { ...item, quantity } : item
-            )
-        );
     }
 
     async function clearCart() {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
-
-        const { error } = await supabase
-            .from('cart_items')
-            .delete()
-            .eq('user_id', session.user.id);
-
-        if (error) {
-            console.error('Erro ao limpar carrinho:', error);
-            return;
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/cart/user/${session.user.id}`);
+            if (!response.ok) {
+                const data = await response.json();
+                console.error('Erro ao limpar carrinho:', data.error);
+                return;
+            }
+            setItems([]);
+        } catch (error) {
+            console.error('Erro na requisição ao limpar carrinho:', error);
         }
-
-        setItems([]);
     }
 
     function calculateTotal() {

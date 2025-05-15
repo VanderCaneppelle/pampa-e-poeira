@@ -20,6 +20,9 @@ import Registro from './pages/Registro';
 import RegistroConfirmacao from './pages/RegistroConfirmacao';
 import AuthRoute from './components/AuthRoute';
 import { CartProvider } from './contexts/CartContext';
+import AdminNovoProduto from './pages/AdminNovoProduto';
+import AdminGerenciarProdutos from './pages/AdminGerenciarProdutos';
+import AdminEditarProduto from './pages/AdminEditarProduto';
 
 function App() {
   return (
@@ -45,6 +48,9 @@ function App() {
               <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
               <Route path="/admin/produtos" element={<ProtectedRoute><AdminProdutos /></ProtectedRoute>} />
               <Route path="/admin/gerenciar-pedidos" element={<ProtectedRoute><AdminGerenciarPedidos /></ProtectedRoute>} />
+              <Route path="/admin/novo-produto" element={<ProtectedRoute><AdminNovoProduto /></ProtectedRoute>} />
+              <Route path="/admin/gerenciar-produtos" element={<ProtectedRoute><AdminGerenciarProdutos /></ProtectedRoute>} />
+              <Route path="/admin/editar-produto/:id" element={<ProtectedRoute><AdminEditarProduto /></ProtectedRoute>} />
             </Routes>
           </main>
           <Footer />

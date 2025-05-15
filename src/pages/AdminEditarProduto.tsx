@@ -46,13 +46,15 @@ export default function AdminEditarProduto() {
     useEffect(() => {
         async function fetchProduto() {
             setLoading(true);
-            const { data, error } = await supabase.from('produtos').select('*').eq('id', id).single();
-            if (!error && data) {
+            const API_URL = import.meta.env.VITE_API_URL;
+            const response = await fetch(`${API_URL}/api/produtos/${id}`);
+            if (response.ok) {
+                const data = await response.json();
                 setForm({
                     nome: data.nome || '',
                     descricao: data.descricao || '',
-                    preco: data.preco ? String(data.preco) : '',
-                    precoPromocional: data.preco_promocional ? String(data.preco_promocional) : '',
+                    preco: data.preco ? Number(data.preco) : '',
+                    precoPromocional: data.preco_promocional ? Number(data.preco_promocional) : '',
                     categoria: data.categoria || categorias[0],
                     lancamento: !!data.lancamento,
                     colecaoNova: !!data.nova_colecao,
@@ -65,6 +67,8 @@ export default function AdminEditarProduto() {
                     const isInfantil = data.tamanhos.some((t: string) => Number(t) >= 23 && Number(t) <= 34);
                     setSubcategoriaCalcado(isInfantil ? 'Infantil' : 'Adulto');
                 }
+            } else {
+                setForm({ nome: '', descricao: '', preco: '', precoPromocional: '', categoria: '', lancamento: false, colecaoNova: false });
             }
             setLoading(false);
         }
@@ -95,35 +99,34 @@ export default function AdminEditarProduto() {
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         setLoading(true);
-        setMsg(null);
+        const API_URL = import.meta.env.VITE_API_URL;
 
-        // Update normal com todos os campos
+        // Monta o objeto com os nomes corretos das colunas do banco
         const payload = {
             nome: form.nome,
             descricao: form.descricao,
-            preco: Number(form.preco),
+            preco: form.preco ? Number(form.preco) : null,
             preco_promocional: form.precoPromocional ? Number(form.precoPromocional) : null,
             categoria: form.categoria,
             lancamento: form.lancamento,
             nova_colecao: form.colecaoNova,
+            imagens,
+            imagem_principal: imagens[principal] || null,
             tamanhos,
             cores,
-            imagem_principal: imagens[principal] || null,
         };
 
-        const { data: _, error } = await supabase
-            .from('produtos')
-            .update(payload)
-            .eq('id', id)
-            .select();
-
+        const response = await fetch(`${API_URL}/api/produtos/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
         setLoading(false);
-        if (error) {
-            setMsg('Erro ao atualizar produto: ' + error.message);
-            console.error('Erro ao atualizar produto:', error);
-        } else {
+        if (response.ok) {
             setMsg('Produto atualizado com sucesso!');
             setTimeout(() => navigate('/admin/gerenciar-produtos'), 1200);
+        } else {
+            setMsg('Erro ao atualizar produto!');
         }
     }
 

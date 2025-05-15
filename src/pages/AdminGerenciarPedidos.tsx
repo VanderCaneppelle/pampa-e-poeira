@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 interface Order {
     id: string;
     user_id: string;
@@ -42,31 +44,23 @@ export default function AdminGerenciarPedidos() {
     async function fetchOrders() {
         try {
             setLoading(true);
-            let query = supabase
-                .from('orders')
-                .select(`
-                    *,
-                    user:user_id (
-                        email
-                    )
-                `)
-                .order('created_at', { ascending: false });
 
-            if (statusFilter) {
-                query = query.eq('status', statusFilter);
+            let url = `${API_URL}/api/orders`;
+            const params = new URLSearchParams();
+
+            if (statusFilter) params.append('status', statusFilter);
+            if (emailFilter) params.append('email', emailFilter);
+
+            if ([...params].length > 0) {
+                url += `?${params.toString()}`;
             }
 
-            if (emailFilter) {
-                query = query.ilike('user.email', `%${emailFilter}%`);
-            }
-
-            const { data, error } = await query;
-
-            if (error) throw error;
+            const response = await fetch(url);
+            const data = await response.json();
 
             setOrders(data.map((order: any) => ({
                 ...order,
-                user_email: order.user?.email
+                user_email: order.user?.email || order.user_email
             })));
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Erro ao carregar pedidos');
@@ -74,6 +68,7 @@ export default function AdminGerenciarPedidos() {
             setLoading(false);
         }
     }
+
 
     async function updateOrderStatus(orderId: string, newStatus: string) {
         try {

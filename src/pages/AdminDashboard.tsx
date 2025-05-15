@@ -165,7 +165,10 @@ export default function AdminDashboard() {
                                 </div>
                             </div>
                         </Link>
-                        <div className="bg-white overflow-hidden shadow rounded-lg opacity-60 cursor-not-allowed">
+                        <Link
+                            to="/admin/gerenciar-pedidos"
+                            className="bg-white overflow-hidden shadow rounded-lg hover:shadow-lg transition-shadow duration-300"
+                        >
                             <div className="p-6">
                                 <div className="flex items-center">
                                     <div className="flex-shrink-0 bg-pampa-leather rounded-md p-3">
@@ -181,7 +184,7 @@ export default function AdminDashboard() {
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </Link>
                     </div>
                 </main>
             </div>

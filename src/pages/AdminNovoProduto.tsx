@@ -84,43 +84,57 @@ export default function AdminNovoProduto() {
         e.preventDefault();
         setLoading(true);
         setMsg(null);
+
         let urls: string[] = [];
-        // Upload das imagens para o Supabase Storage
+
+        // Upload das imagens no Supabase
         for (let i = 0; i < imagens.length; i++) {
             const file = imagens[i];
-            const { data: _, error } = await supabase.storage
+            const { error } = await supabase.storage
                 .from('produtos')
                 .upload(`${idProduto}/${file.name}`, file, { upsert: true });
+
             if (error) {
                 setMsg('Erro ao fazer upload da imagem: ' + error.message);
                 setLoading(false);
                 return;
             }
-            const url = supabase.storage.from('produtos').getPublicUrl(`${idProduto}/${file.name}`).data.publicUrl;
+
+            const url = supabase.storage
+                .from('produtos')
+                .getPublicUrl(`${idProduto}/${file.name}`).data.publicUrl;
+
             urls.push(url);
         }
-        // Salva no banco: array de imagens, url da principal, tamanhos e cores
-        const { data: _, error } = await supabase.from('produtos').insert([
-            {
-                id: idProduto,
-                nome: form.nome,
-                descricao: form.descricao,
-                preco: Number(form.preco),
-                preco_promocional: form.precoPromocional ? Number(form.precoPromocional) : null,
-                categoria: form.categoria,
-                lancamento: form.lancamento,
-                nova_colecao: form.colecaoNova,
-                imagens: urls,
-                imagem_principal: urls[principal] || null,
-                tamanhos,
-                cores,
-            },
-        ]);
-        setLoading(false);
-        if (error) {
-            setMsg('Erro ao cadastrar produto: ' + error.message);
-        } else {
+
+        const produto = {
+            id: idProduto,
+            nome: form.nome,
+            descricao: form.descricao,
+            preco: Number(form.preco),
+            preco_promocional: form.precoPromocional ? Number(form.precoPromocional) : null,
+            categoria: form.categoria,
+            lancamento: form.lancamento,
+            nova_colecao: form.colecaoNova,
+            imagens: urls,
+            imagem_principal: urls[principal] || null,
+            tamanhos,
+            cores,
+        };
+
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/produtos`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(produto),
+            });
+
+            if (!response.ok) {
+                throw new Error('Erro ao salvar produto no backend');
+            }
+
             setMsg('Produto cadastrado com sucesso!');
+            // Resetar formulário
             setForm({
                 nome: '', descricao: '', preco: '', precoPromocional: '', categoria: categorias[0], lancamento: false, colecaoNova: false,
             });
@@ -130,6 +144,10 @@ export default function AdminNovoProduto() {
             setTamanhos([]);
             setCores([]);
             setIdProduto(gerarIdProduto(Date.now() % 1000));
+        } catch (err: any) {
+            setMsg(err.message || 'Erro ao cadastrar produto');
+        } finally {
+            setLoading(false);
         }
     }
 

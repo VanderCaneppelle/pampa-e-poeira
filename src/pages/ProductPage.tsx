@@ -31,13 +31,20 @@ export default function ProductPage() {
     useEffect(() => {
         async function fetchProduct() {
             setLoading(true);
-            const { data, error } = await supabase
-                .from('produtos')
-                .select('*')
-                .eq('id', id)
-                .single();
-            if (!error) setProduct(data);
-            setLoading(false);
+            try {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/api/produtos/${id}`);
+                const data = await response.json();
+                if (response.ok) {
+                    setProduct(data);
+                } else {
+                    console.error('Erro ao buscar produto:', data.error);
+                }
+            } catch (error) {
+                setProduct(null);
+                console.error('Erro ao buscar produto:', error);
+            } finally {
+                setLoading(false);
+            }
         }
         fetchProduct();
     }, [id]);

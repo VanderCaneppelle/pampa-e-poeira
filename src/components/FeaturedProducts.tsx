@@ -1,26 +1,27 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
+//import { supabase } from '../lib/supabaseClient';
 import { Link } from 'react-router-dom';
 
 export default function FeaturedProducts() {
     const [produtos, setProdutos] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
+
     useEffect(() => {
-        async function fetchProdutos() {
+        async function fetchFeaturedProducts() {
             setLoading(true);
-            const { data, error } = await supabase
-                .from('produtos')
-                .select('*')
-                .eq('lancamento', true)
-                .order('created_at', { ascending: false })
-                .limit(4);
-            if (!error && data) {
-                setProdutos(data);
+            try {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/api/featured`);
+                const data = await response.json();
+                setProdutos(Array.isArray(data) ? data : []);
+            } catch (error) {
+                setProdutos([]);
+                alert('Erro ao buscar nova coleção!');
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         }
-        fetchProdutos();
+        fetchFeaturedProducts();
     }, []);
 
     return (

@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
 import Banner from '../components/Banner';
 import { Link } from 'react-router-dom';
 
@@ -10,16 +9,27 @@ export default function Loja() {
     useEffect(() => {
         async function fetchProdutos() {
             setLoading(true);
-            const { data, error } = await supabase
-                .from('produtos')
-                .select('*')
-                .or('nova_colecao.is.false,nova_colecao.is.null')
-                .order('id', { ascending: false });
-            if (!error) setProdutos(data || []);
-            setLoading(false);
+            try {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/api/produtos`);
+                const data = await response.json();
+                if (response.ok && Array.isArray(data)) {
+                    setProdutos(data);
+                } else {
+                    setProdutos([]);
+                    if (data && data.error) {
+                        alert('Erro ao buscar produtos: ' + data.error);
+                    }
+                }
+            } catch (error) {
+                setProdutos([]);
+                alert('Erro ao buscar produtos!');
+            } finally {
+                setLoading(false);
+            }
         }
         fetchProdutos();
     }, []);
+
 
     if (loading) return <div>Carregando produtos...</div>;
 

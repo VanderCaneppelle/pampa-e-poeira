@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
+//import { supabase } from '../lib/supabaseClient';
 import Banner from '../components/Banner';
 import { Link } from 'react-router-dom';
 
@@ -8,17 +8,20 @@ export default function Colecao() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        async function fetchProdutos() {
+        async function fetchNovaColecao() {
             setLoading(true);
-            const { data, error } = await supabase
-                .from('produtos')
-                .select('*')
-                .eq('nova_colecao', true)
-                .order('id', { ascending: false });
-            if (!error) setProdutos(data || []);
-            setLoading(false);
+            try {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/api/nova-colecao`);
+                const data = await response.json();
+                setProdutos(Array.isArray(data) ? data : []);
+            } catch (error) {
+                setProdutos([]);
+                alert('Erro ao buscar nova coleção!');
+            } finally {
+                setLoading(false);
+            }
         }
-        fetchProdutos();
+        fetchNovaColecao();
     }, []);
 
     if (loading) return <div>Carregando produtos...</div>;

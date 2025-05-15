@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useNavigate } from 'react-router-dom';
 import AdminBar from '../components/AdminBar';
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default function AdminGerenciarProdutos() {
     const [produtos, setProdutos] = useState<any[]>([]);
@@ -12,21 +13,48 @@ export default function AdminGerenciarProdutos() {
     useEffect(() => {
         async function fetchProdutos() {
             setLoading(true);
-            const { data, error } = await supabase.from('produtos').select('*').order('nome');
-            if (!error) setProdutos(data || []);
-            setLoading(false);
+            try {
+                const response = await fetch(`${API_URL}/api/produtos`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('Erro ao buscar produtos:', errorData.error);
+                    setProdutos([]);
+                } else {
+                    const data = await response.json();
+                    setProdutos(data || []);
+                }
+            } catch (error) {
+                setProdutos([]);
+                console.error('Erro ao buscar produtos:', error);
+            } finally {
+                setLoading(false);
+            }
         }
         fetchProdutos();
-    }, []);
+    }, [API_URL]);
 
     async function handleExcluir(id: string) {
         if (!window.confirm('Tem certeza que deseja excluir este produto?')) return;
-        const { error } = await supabase.from('produtos').delete().eq('id', id);
-        if (!error) {
-            setProdutos(produtos.filter(p => p.id !== id));
-            setMsg('Produto excluído com sucesso!');
-        } else {
-            setMsg('Erro ao excluir produto: ' + error.message);
+        setLoading(true);
+        try {
+            const response = await fetch(`${API_URL}/api/produtos/${id}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+            });
+            if (!response.ok) {
+                const errorData = await response.json();
+                alert('Erro ao excluir produto: ' + errorData.error);
+            } else {
+                setProdutos(produtos.filter((p) => p.id !== id));
+            }
+        } catch (error) {
+            alert('Erro ao excluir produto!');
+        } finally {
+            setLoading(false);
         }
     }
 
