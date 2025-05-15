@@ -22,8 +22,8 @@ const swaggerDefinition = {
     },
     servers: [
         {
-            url: VITE_API_URL,
-            description: 'Servidor teste',
+            url: 'http://localhost:3001',
+            description: 'Servidor local',
         },
     ],
 };
